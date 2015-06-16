@@ -1,0 +1,215 @@
+---
+title: "renjin-blog-may2015"
+author: "Ieuan Clay"
+date: "Tuesday, June 16, 2015"
+output:
+  html_document:
+    keep_md: yes
+    theme: united
+    toc: yes
+---
+
+## GenBench: Realworld Genomics Benchmarks for R
+
+### Pre-amble
+
+Bioinformatics is growing as a [market](https://www.linux.com/community/blogs/131-business-or-qenterprise/775480-bioinformatics-market-is-growing-at-a-cagr-of-254-from-2012-2019-by-transparency-market-researc) and as a field. Just looking at the diversity of questions covered by [Bioconductor](http://www.bioconductor.org/packages/release/BiocViews.html#___BiologicalQuestion).
+
+Forked from and inspired by [GenBase](https://github.com/mitdbg/genbase), GenBench is an attempt to build up some ~ecologically valid~ benchmarks and tests for bioinformatics. A nice example of this is ~RforProteomics~, see their [project](http://lgatto.github.com/RforProteomics/) and accompanying [paper](http://arxiv.org/pdf/1305.6559.pdf).
+
+This benchmark does not cover all possible operations performed in bioinformatics/genomics. In particular, we chose to not focus on (pre-)processing of raw data and instead focus on higher-level processing typical for a rage of datatypes.
+
+We also chose to use real-world data, to allow not just benchmarking of clock speeds upon completion of a given analysis, but also to allow for testing.
+
+Generally speaking, we do not endorse any of the methods used as *"standards"* or *"recommended"*, in fact, because we aim to start simple and avoid as far as possible non-essential packages, methods may be very much not recommended. Future updates will implement more advanced methods, a wider range of packages, etc. 
+
+__Suggestions and contributions for datasets or methods are welcome.__
+
+This project was developed with support/inspiration/coffee from [BeDataDriven](https://www.bedatadriven.com). All Hail!
+
+
+### This post
+In this post we wanted to get feedback on ~"version 1.0"~ of [GenBench](https://github.com/biolion/genbench), and thought a nice way to do that would be to run a little experiment in the hope it would generate interest/support/glory.
+
+Currently (as of June 2015) [GenBench](https://github.com/biolion/genbench) includes 10 benchmark scripts, each containing several microbenchmarks, covering topics from microarray analysis with [limma](http://bioinf.wehi.edu.au/limma/), graphs with [iGraph](http://igraph.org/r/) and some machine learning as might be applied to patient profiling. We thought this was enough to make some comparisons across different versions of R, to examine the real-world effects of recent upgrades to [GNU R](http://www.r-project.org/).
+
+Specifically, we ran the full suite of benchmarks against the following releases (complied from [source](http://cran.rstudio.com/) using this [script](https://github.com/biolion/genbench-articles/blob/master/renjin-blog-may2015/install-r-sources.sh):
+
+- R-2.14.2
+- R-2.15.3
+- R-3.0.3
+- R-3.1.3
+- R-3.2.0 
+
+## The Benchmarks
+### The Data
+
+All data is publicly available, sourced from various places (for further information please see the individual README accompanying each benchmark, and please let us know if something is incorrect/missing/...):
+
+(a) Gene Expression Data
+  - 3' Microarray
+    - [Ramsey and Fontes, 2013](http://www.ncbi.nlm.nih.gov/pubmed/23954399)
+      - [dataset](http://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS5070)
+      - [data](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE45417)
+      - [full article](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783546/)
+
+  - mRNAseq
+    - Data sourced from [ReCount](http://bowtie-bio.sourceforge.net/recount/)
+      - Specifically, the "gilad" study, [PMID: 20009012](http://www.ncbi.nlm.nih.gov/pubmed?term=20009012)
+
+(b) Protein Expression Data
+  - RPPA platform
+    - Data was sourced from [Hoadley et al](http://www.cell.com/cell/abstract/S0092-8674(14)00876-9), using the [TCGA portal](https://tcga-data.nci.nih.gov/docs/publications/TCGApancan_2014/)
+  - Mass Spectrometry is not yet implemented
+
+(c) Genetics Data
+  - Population studies were simulated using [data](http://tcga-data.nci.nih.gov/docs/publications/laml_2012/) from the [AML paper](http://www.nejm.org/doi/full/10.1056/NEJMoa1301689) authored by the TCGA consortium
+  - Pedigree studies were simulated using data obtained from the nice people at [Genomes Unzipped](http://genomesunzipped.org/members), who make [their own genomic data](http://genomesunzipped.org/data) publicly available
+
+(d) Simulated matrices (to allow for testing scale, as in orginal [GenBase](https://github.com/mitdbg/genbase) project 
+
+(e) Clinical data and Data Integration
+  - Data sourced from package [ncvreg](http://cran.r-project.org/web/packages/ncvreg/ncvreg.pdf), further references below:
+
+    - heart dataset
+      - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
+      - Rousseauw, J., et al. (1983). Coronary risk factor screening in three rural communities. South African Medical Journal, 64, 430-436.
+    - prostate dataset
+      - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
+      - Stamey, T., et al. (1989). Prostate specific antigen in the diagnosis and treatment of adenocarcinoma of the prostate. II. Radical prostatectomy treated patients. Journal of Urology, 16: 1076-1083.
+    - lung dataset
+      - package [survival](http://CRAN.R-project.org/package=survival)
+      - Kalbfleisch D and Prentice RL (1980), The Statistical Analysis of Failure Time Data. Wiley, New York.
+
+  - [gene RIFs](http://www.ncbi.nlm.nih.gov/gene/about-generif) provided interaction data to be used for graphical modelling with [igraph](http://igraph.sourceforge.net/)
+  - We also reproduce aspects of integrative analysis carried out in the Human Liver Cohort project:
+    - [synapse entry](https://www.synapse.org/#!Synapse:syn299418)
+    - [Schadt et al, 2008](http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.0060107)
+    
+### The Code
+
+(a) Gene Expression Data
+  - 3' Microarray
+Methods typical for microarrays including RMA and MAS150 normalisation, differential expression with limma, and some gene-set tests.
+
+  - mRNAseq
+Methods typical for mRNAseq expression analyses, including the Voom/edgeR/limma approach (The "DEseq" approach is to come).
+
+(b) Protein Expression Data
+Focussing on classification, RPPA [data](https://tcga-data.nci.nih.gov/docs/publications/TCGApancan_2014/) from [Hoadley et al](http://www.cell.com/cell/abstract/S0092-8674(14)00876-9) was used a range of unpsupervised clustering methods including hierarchical, kmeans, random forrest, bayesian
+
+(c) Genetics Data
+This section is still quite under-developed, focussing on summarisation of allele frequencies, and some sliding window methods. Implementation of "proper" genetics analysis methods is a burning priority!
+
+(d) Simulated data
+Focus on the linear algebra and stats operations below: 
+
+  - Linear Regression: build regression model to predict drug response from expression data
+
+  - Covariance: determine which pairs of genes have expression values that are correlated
+
+  - SVD: reduce the dimensionality of the problem to the top 50 components
+
+  - Biclustering: simultaneously cluster rows and columns in the expression matrix to find related genes
+
+  - Statistics: determine if certain sets of genes are highly expressed compared to the entire set of genes
+
+(e) Clinical data and Data Integration
+Alongside some graphical methods using iGraph, we focus on machine learning approaches including clustering, and prediction using naive Bayes and robust linear model approaches
+
+
+## The Experiment
+Prepare the environment and connect to the database (GenBench also contains code for working from local files, and for setting up your own database).
+```{r, echo=FALSE}
+# load packages
+library(RJDBC)
+library(plyr)
+library(ggplot2)
+# set the seed
+set.seed(8008)
+# connect to the database
+conn <- read.delim(file.path("~", "..", "ieuan_work", "bdd", "genbench-articles", "conninfo.txt"), sep = ",")
+conn <- dbConnect(
+  drv = JDBC(file.path("~", "..", "ieuan_work", "bdd", "genbench-articles","renjin-blog-may2015/mysql-connector-java-5.1.35.jar"),
+             driverClass = "com.mysql.jdbc.Driver", 
+             identifier.quote="`"),
+  conn$string, user=conn$usr, password=conn$pwd
+  )
+```
+
+```{r, eval=FALSE}
+# load packages
+library(RJDBC)
+library(plyr)
+library(ggplot2)
+# set the seed
+set.seed(8008)
+# connect to the database
+conn <- dbConnect(
+  drv = JDBC("renjin-blog-may2015/mysql-connector-java-5.1.35.jar",
+             driverClass = "com.mysql.jdbc.Driver", 
+             identifier.quote="`"),
+  "connection string", user="foo", password="bar"
+  )
+```
+
+Load the data that we will examine:
+
+```{r}
+res <- dbGetQuery(conn,statement="
+                  
+                  SELECT
+                    *
+                  FROM
+                    meta m
+                    JOIN timings t ON m.meta_id=t.meta_id
+                  WHERE
+                    MONTHNAME(m.insert_ts) = 'June' AND
+                    YEAR(m.insert_ts) = 2015 AND
+                  t.variable='elapsed' AND
+                  m.sys_name='Linux' AND
+                  m.lang!='not set'
+                  ;
+                  "
+                  )
+table(res$lang_major, res$lang_minor)
+```
+
+Plot it out
+```{r allresults}
+g <- ggplot(data = res)
+g +
+  geom_jitter(aes(y=value, x=block, colour=variable), 
+              position = position_jitter(width = .5)) +
+  facet_grid(sys_name + sys_release + lang + lang_major + lang_minor ~ benchmark_group + benchmark, scales = "free_x") +
+  scale_y_log10() +
+  theme_bw() +
+  theme(axis.text.x  = element_text(angle=90, vjust=0.5)) +
+  ggtitle("Time per benchmark run, by block") +
+  ylab("Time (seconds)") +
+  xlab("Benchmark section")
+
+```
+
+Do some stats
+```{r}
+
+```
+
+Examine those results
+```{r, results='asis', echo=FALSE}
+cat("x | y", "--- | ---", sep="\n")
+cat(apply(res, 1, function(X) paste(X, collapse=" | ")), sep = "\n")
+```
+
+## Conclusion
+
+
+## References
+* R Markdown citations
+     * [Rstudio on R Markdown](http://rstudio.org/docs/authoring/using_markdown)
+     * [Yihui Xie](http://yihui.name/knitr/): I really want to thank him for developing `knitr`.
+     * standard [Markdown](http://daringfireball.net/projects/markdown/)
+     * Renjin [website]](http://www.renjin.org/) and on [Github](https://github.com/bedatadriven/renjin)
+     * Genbench on [Github](https://github.com/biolion/genbench), please submit any bugs [here](https://github.com/biolion/genbench/issues)
+     
