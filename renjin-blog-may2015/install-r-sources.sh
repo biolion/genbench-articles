@@ -22,5 +22,6 @@ do
   cd $DIRNAME
   .configure
   make && make install
+  sudo ./bin/R CMD javareconf
   cd ..
 done
