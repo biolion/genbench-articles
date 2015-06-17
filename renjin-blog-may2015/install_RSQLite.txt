@@ -1,0 +1,23 @@
+
+# R-2.15
+wget http://cran.r-project.org/src/contrib/00Archive/RSQLite/RSQLite_0.11.2.tar.gz
+wget http://cran.r-project.org/src/contrib/Archive/plyr/plyr_1.7.tar.gz
+# R-2.14
+wget http://cran.r-project.org/src/contrib/00Archive/RSQLite/RSQLite_0.11.1.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/DBI/DBI_0.2-5.tar.gz
+
+# R-2.15
+install.packages("RSQLite_0.11.2.tar.gz", repo=NULL, type="source")
+install.packages("plyr_1.7.tar.gz", repo=NULL, type="source")
+
+# R-2.14
+install.packages("plyr_1.7.tar.gz", repo=NULL, type="source")
+install.packages("DBI_0.2-5.tar.gz", repo=NULL, type="source")
+install.packages("RSQLite_0.11.1.tar.gz", repo=NULL, type="source")
+
+source("http://www.bioconductor.org/biocLite.R")
+biocLite("hgu133plus2cdf")
+
+# 2.14 - RSQLite missing
+configure: WARNING: cache variable ac_cv_prog_ac_ct_CC contains a newline
+ERROR: configuration failed for package 'RSQLite'
