@@ -1,0 +1,72 @@
+
+# R-2.15
+wget http://cran.r-project.org/src/contrib/00Archive/RSQLite/RSQLite_0.11.2.tar.gz
+wget http://cran.r-project.org/src/contrib/Archive/plyr/plyr_1.7.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/boot/boot_1.3-7.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/class/class_7.3-5.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/Rcpp/Rcpp_0.10.1.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/reshape2/reshape2_1.2.2.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/scales/scales_0.2.3.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/foreign/foreign_0.8-51.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/nlme/nlme_3.1-106.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/sp/sp_1.0-11.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/sqldf/sqldf_0.4-6.1.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/gsubfn/gsubfn_0.5-7.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/chron/chron_2.3-40.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/RSQLite.extfuns/RSQLite.extfuns_0.0.1.tar.gz
+
+# R-2.14
+wget http://cran.r-project.org/src/contrib/00Archive/RSQLite/RSQLite_0.11.1.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/DBI/DBI_0.2-5.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/Rcpp/Rcpp_0.9.5.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/stringr/stringr_0.6.1.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/reshape/reshape_0.8.4.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/ggplot2/ggplot2_0.8.9.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/Hmisc/Hmisc_3.9-0.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/irlba/irlba_1.0.2.tar.gz
+wget http://cran.r-project.org/src/contrib/00Archive/lasso2/lasso2_1.2-12.tar.gz
+
+
+# R-2.15
+install.packages("RSQLite_0.11.2.tar.gz", repo=NULL, type="source")
+install.packages("plyr_1.7.tar.gz", repo=NULL, type="source")
+install.packages("boot_1.3-7.tar.gz", repo=NULL, type="source")
+install.packages("class_7.3-5.tar.gz", repo=NULL, type="source")
+install.packages("Rcpp_0.10.1.tar.gz", repo=NULL, type="source")
+install.packages("reshape2_1.2.2.tar.gz", repo=NULL, type="source")
+install.packages("scales_0.2.3.tar.gz", repo=NULL, type="source")
+install.packages("foreign_0.8-51.tar.gz", repo=NULL, type="source")
+install.packages("nlme_3.1-106.tar.gz", repo=NULL, type="source")
+install.packages("sp_1.0-11.tar.gz", repo=NULL, type="source")
+install.packages("gsubfn_0.5-7.tar.gz", repo=NULL, type="source")
+install.packages("chron_2.3-40.tar.gz", repo=NULL, type="source")
+install.packages("RSQLite.extfuns_0.0.1.tar.gz", repo=NULL, type="source")
+install.packages("sqldf_0.4-6.1.tar.gz", repo=NULL, type="source")
+
+
+# R-2.14
+install.packages("plyr_1.7.tar.gz", repo=NULL, type="source")
+install.packages("boot_1.3-7.tar.gz", repo=NULL, type="source")
+install.packages("Rcpp_0.9.5.tar.gz", repo=NULL, type="source")
+install.packages("DBI_0.2-5.tar.gz", repo=NULL, type="source")
+install.packages("RSQLite_0.11.1.tar.gz", repo=NULL, type="source")
+install.packages("scales_0.2.3.tar.gz", repo=NULL, type="source")
+install.packages("stringr_0.6.1.tar.gz", repo=NULL, type="source")
+install.packages("class_7.3-5.tar.gz", repo=NULL, type="source")
+install.packages("reshape2_1.2.2.tar.gz", repo=NULL, type="source")
+install.packages("reshape_0.8.4.tar.gz", repo=NULL, type="source")
+install.packages("ggplot2_0.8.9.tar.gz", repo=NULL, type="source")
+install.packages ("Hmisc_3.9-0.tar.gz", repo=NULL, type="source")
+install.packages("gsubfn_0.5-7.tar.gz", repo=NULL, type="source")
+install.packages("chron_2.3-40.tar.gz", repo=NULL, type="source")
+install.packages("RSQLite.extfuns_0.0.1.tar.gz", repo=NULL, type="source")
+install.packages("sqldf_0.4-6.1.tar.gz", repo=NULL, type="source")
+install.packages("irlba_1.0.2.tar.gz", repo=NULL, type="source")
+install.packages("~/tmp/Rpkgs/lasso2_1.2-12.tar.gz", repo=NULL, type="source")
+
+
+
+
+source("http://www.bioconductor.org/biocLite.R")
+biocLite("hgu133plus2cdf")
+

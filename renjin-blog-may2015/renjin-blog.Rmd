@@ -7,21 +7,29 @@ output:
     keep_md: yes
     theme: united
     toc: yes
+    fig_width: 8
+    fig_height: 4
+  pdf_document:
+    toc: yes
 ---
 
 ## GenBench: Realworld Genomics Benchmarks for R
 
-### Pre-amble
+### Pre-amble/motivation
 
-Bioinformatics is growing as a [market](https://www.linux.com/community/blogs/131-business-or-qenterprise/775480-bioinformatics-market-is-growing-at-a-cagr-of-254-from-2012-2019-by-transparency-market-researc) and as a field. Just looking at the diversity of questions covered by [Bioconductor](http://www.bioconductor.org/packages/release/BiocViews.html#___BiologicalQuestion).
+Bioinformatics is growing as a [market](https://www.linux.com/community/blogs/131-business-or-qenterprise/775480-bioinformatics-market-is-growing-at-a-cagr-of-254-from-2012-2019-by-transparency-market-researc) and as a field. Just looking at the diversity of questions covered by [Bioconductor](http://www.bioconductor.org/packages/release/BiocViews.html#___BiologicalQuestion) shows us that "bioinformatics" is no longer just the realm of sequence comparison.
 
-Forked from and inspired by [GenBase](https://github.com/mitdbg/genbase), GenBench is an attempt to build up some ~ecologically valid~ benchmarks and tests for bioinformatics. A nice example of this is ~RforProteomics~, see their [project](http://lgatto.github.com/RforProteomics/) and accompanying [paper](http://arxiv.org/pdf/1305.6559.pdf).
+Our company as recently become involved in bioinformatics, and needed a base of representative testing/benchmarking code to help develop [Renjin](https://github.com/bedatadriven/renjin) for bioinformatics applications.
+
+### Background
+
+Forked from, and inspired by, [GenBase](https://github.com/mitdbg/genbase), [GenBench](https://github.com/biolion/genbench) is an attempt to build up some *ecologically valid* benchmarks and tests for bioinformatics. Another nice example of this is RforProteomics, see their [project](http://lgatto.github.com/RforProteomics/) and accompanying [paper](http://arxiv.org/pdf/1305.6559.pdf).
 
 This benchmark does not cover all possible operations performed in bioinformatics/genomics. In particular, we chose to not focus on (pre-)processing of raw data and instead focus on higher-level processing typical for a rage of datatypes.
 
 We also chose to use real-world data, to allow not just benchmarking of clock speeds upon completion of a given analysis, but also to allow for testing.
 
-Generally speaking, we do not endorse any of the methods used as *"standards"* or *"recommended"*, in fact, because we aim to start simple and avoid as far as possible non-essential packages, methods may be very much not recommended. Future updates will implement more advanced methods, a wider range of packages, etc. 
+Generally speaking, we **do not** endorse any of the methods used as *"standards"* or *"recommended"*, in fact, because we aim to start simple and avoid as far as possible non-essential packages, methods may be very much not recommended. Future updates will implement more advanced methods, a wider range of packages, etc. 
 
 __Suggestions and contributions for datasets or methods are welcome.__
 
@@ -29,7 +37,7 @@ This project was developed with support/inspiration/coffee from [BeDataDriven](h
 
 
 ### This post
-In this post we wanted to get feedback on ~"version 1.0"~ of [GenBench](https://github.com/biolion/genbench), and thought a nice way to do that would be to run a little experiment in the hope it would generate interest/support/glory.
+In this post we wanted to get feedback on *"version 1.0"* of [GenBench](https://github.com/biolion/genbench), and thought a nice way to do that would be to run a little experiment in the hope it would generate interest/support/glory.
 
 Currently (as of June 2015) [GenBench](https://github.com/biolion/genbench) includes 10 benchmark scripts, each containing several microbenchmarks, covering topics from microarray analysis with [limma](http://bioinf.wehi.edu.au/limma/), graphs with [iGraph](http://igraph.org/r/) and some machine learning as might be applied to patient profiling. We thought this was enough to make some comparisons across different versions of R, to examine the real-world effects of recent upgrades to [GNU R](http://www.r-project.org/).
 
@@ -119,12 +127,13 @@ Alongside some graphical methods using iGraph, we focus on machine learning appr
 
 
 ## The Experiment
-Prepare the environment and connect to the database (GenBench also contains code for working from local files, and for setting up your own database).
+First we prepare the environment and connect to the database (GenBench also contains code for working from local files, and for setting up your own database).
 ```{r, echo=FALSE}
 # load packages
 library(RJDBC)
 library(plyr)
 library(ggplot2)
+library(knitr)
 # set the seed
 set.seed(8008)
 # connect to the database
@@ -142,6 +151,7 @@ conn <- dbConnect(
 library(RJDBC)
 library(plyr)
 library(ggplot2)
+library(knitr)
 # set the seed
 set.seed(8008)
 # connect to the database
@@ -153,9 +163,9 @@ conn <- dbConnect(
   )
 ```
 
-Load the data that we will examine:
+Load the data that we will examine, loaded on 19-June-2015:
 
-```{r}
+```{r, echo=TRUE}
 res <- dbGetQuery(conn,statement="
                   
                   SELECT
@@ -164,52 +174,117 @@ res <- dbGetQuery(conn,statement="
                     meta m
                     JOIN timings t ON m.meta_id=t.meta_id
                   WHERE
+                    DAYOFMONTH(m.insert_ts) = 19 AND
                     MONTHNAME(m.insert_ts) = 'June' AND
                     YEAR(m.insert_ts) = 2015 AND
                   t.variable='elapsed' AND
                   m.sys_name='Linux' AND
-                  m.lang!='not set'
+                  m.lang!='not set' AND
+                  m.benchmark_group != 'TEMPLATE'
+                  
                   ;
                   "
                   )
-table(res$lang_major, res$lang_minor)
 ```
 
-Plot it out
-```{r allresults}
-g <- ggplot(data = res)
+Each benchmark is "grouped" (i.e. put together with other benchmarks that work on similar topics/data) and consists of several microbenchmarks (i.e. timed blocks of code). For example, in the "mrna_seq" group, we currently have only one benchmark (which uses the edgeR approach, future plans include adding other methods). The timings for the individual benchmark runs can be seen here:
+
+```{r exampleresults, echo=FALSE}
+g <- ggplot(data = subset(res, benchmark_group=="mrna_seq"))
 g +
-  geom_jitter(aes(y=value, x=block, colour=variable), 
-              position = position_jitter(width = .5)) +
-  facet_grid(sys_name + sys_release + lang + lang_major + lang_minor ~ benchmark_group + benchmark, scales = "free_x") +
+  geom_jitter(aes(y=value, x=block, colour=as.numeric(timestamp)), 
+              position = position_jitter(width = .2)) +
+  facet_grid(lang + lang_major + lang_minor ~ benchmark_group + benchmark, 
+             scales = "free_x", space="free_x") +
   scale_y_log10() +
   theme_bw() +
   theme(axis.text.x  = element_text(angle=90, vjust=0.5)) +
-  ggtitle("Time per benchmark run, by block") +
+  ggtitle("Time per benchmark run, by block, edgeR example only") +
   ylab("Time (seconds)") +
-  xlab("Benchmark section")
+  xlab("Benchmark section") +
+  theme(legend.position="none")
 
 ```
 
-Do some stats
-```{r}
+On the x-axis we have the individual sections, and the y-axis the timing (elapsed time in seconds). It is nice to see that the timings are pretty consistent within a given R version and section. I wonder if more variation would be seen benchmarks using parallel computing?
+
+The full results for this test run can be seen here:
+
+```{r allresults, echo=FALSE, fig.height=8}
+g <- ggplot(data = res)
+g +
+  geom_jitter(aes(y=value, x=block, colour=paste(lang, lang_major, lang_minor)), 
+              position = position_jitter(width = .5)) +
+  facet_grid(. ~ benchmark_group + benchmark, 
+             scales = "free_x", space="free_x") +
+  scale_y_log10() +
+  theme_bw() +
+  theme(axis.text.x  = element_text(angle=90, vjust=0.5)) +
+  ggtitle("Time per benchmark run, by block, all results") +
+  ylab("Time (seconds)") +
+  xlab("Benchmark section") +
+  theme(
+    legend.position=c(.95, .85), 
+    legend.title=element_blank(), 
+    legend.background = element_rect(fill="gray90"))
 
 ```
 
-Examine those results
-```{r, results='asis', echo=FALSE}
-cat("x | y", "--- | ---", sep="\n")
-cat(apply(res, 1, function(X) paste(X, collapse=" | ")), sep = "\n")
+We can see differences across the R versions and the trend appears to be that *"newer = faster"*, though there are some cases where R-2.14.2 (the oldest version we test here), outperforms all other versions tested. We are looking into why this might be.
+
+Some quick stats on those differences:
+
+```{r stats}
+res_np <- lapply(
+  split(res, paste(res$benchmark_group,res$benchmark, res$block)), 
+  function(grp){
+    param <- lm(data=grp, value~factor(paste(lang_major, lang_minor)))
+    param <- as.data.frame(anova(param))
+    test <- kruskal.test(data=grp, value~factor(paste(lang_major, lang_minor)))
+    data.frame(
+          # non parametric
+          df=test$parameter, chisq=test$statistic, 
+          kruskal.logp=log10(test$p.value),
+          # parametric
+          f=param[1,"F value"], anova.logp=log10(param[1,"Pr(>F)"])
+               )
+    }
+  )
+res_np <- lapply(names(res_np), function(x){
+  rownames(res_np[[x]]) <- x
+  return(res_np[[x]])}
+  )
 ```
+
+Let's have a look:
+
+```{r kable, echo=FALSE}
+kable(do.call("rbind",res_np), digits = 2)
+
+```
+
+Interesting to see that, for example in the "mrna_seq / edgeR" benchmark, we only see a significant difference for computing on the data, not for loading. But considering that the data loading represents most of the time, this is only a small gain. This also illustrates the importance of having ecologically valid benchmarks, as though updating R does bring speedups, for the informatician at the bench there is no benefit and the speedups are not global. 
 
 ## Conclusion
+Update R!
 
+Watch this space for more updates, including more benchmarks, more coverage of bioconductor, etc. And running the suite not just with different GNU R versions, but with different R language implementations.
+
+Feedback, [bugs](https://github.com/biolion/genbench/issues), pull requests, comments, are all more than welcome! We include a "TEMPLATE" benchmark to make it easy for people to add their own ideas.
 
 ## References
-* R Markdown citations
+* Other Real-World Bioinformatics benchmarks
+     * [GenBase](https://github.com/mitdbg/genbase)
+     * [RforProteomics](http://lgatto.github.com/RforProteomics/)
+     * [BioBench](http://maggini.eng.umd.edu/pub/biobench.pdf)
+* This post was made with markdown
      * [Rstudio on R Markdown](http://rstudio.org/docs/authoring/using_markdown)
      * [Yihui Xie](http://yihui.name/knitr/): I really want to thank him for developing `knitr`.
      * standard [Markdown](http://daringfireball.net/projects/markdown/)
-     * Renjin [website]](http://www.renjin.org/) and on [Github](https://github.com/bedatadriven/renjin)
+* This post was motivated, sponsored and everything else by the wonderful folks at BeDataDriven
+     * Renjin [website](http://www.renjin.org/) and on [Github](https://github.com/bedatadriven/renjin)
+     * [The team](http://www.bedatadriven.com/team.html)
+     * [Hiring!](http://www.bedatadriven.com/jobs.html)
+* Please check out
      * Genbench on [Github](https://github.com/biolion/genbench), please submit any bugs [here](https://github.com/biolion/genbench/issues)
      
