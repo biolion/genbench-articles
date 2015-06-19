@@ -128,7 +128,7 @@ Alongside some graphical methods using iGraph, we focus on machine learning appr
 
 ## The Experiment
 First we prepare the environment and connect to the database (GenBench also contains code for working from local files, and for setting up your own database).
-```{r, echo=FALSE}
+```{r, echo=FALSE, message=FALSE, warning=FALSE, include=FALSE}
 # load packages
 library(RJDBC)
 library(plyr)
