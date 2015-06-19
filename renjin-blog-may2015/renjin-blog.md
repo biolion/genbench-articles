@@ -14,7 +14,7 @@ Our company as recently become involved in bioinformatics, and needed a base of 
 
 Forked from, and inspired by, [GenBase](https://github.com/mitdbg/genbase), [GenBench](https://github.com/biolion/genbench) is an attempt to build up some *ecologically valid* benchmarks and tests for bioinformatics. Another nice example of this is RforProteomics, see their [project](http://lgatto.github.com/RforProteomics/) and accompanying [paper](http://arxiv.org/pdf/1305.6559.pdf).
 
-This benchmark does not cover all possible operations performed in bioinformatics/genomics. In particular, we chose to not focus on (pre-)processing of raw data and instead focus on higher-level processing typical for a rage of datatypes.
+This benchmark does not cover all possible operations performed in bioinformatics/genomics. In particular, we chose to not focus on (pre-)processing of raw data and instead focus on higher-level processing typical for a range of datatypes. We have examples for microarray and mRNA-seq, some proteomics and genetics, machine learning and data integration (for full information, also on the data sources, see the end of the post).
 
 We also chose to use real-world data, to allow not just benchmarking of clock speeds upon completion of a given analysis, but also to allow for testing.
 
@@ -38,85 +38,11 @@ Specifically, we ran the full suite of benchmarks against the following releases
 - R-3.1.3
 - R-3.2.0 
 
-## The Benchmarks
-### The Data
 
-All data is publicly available, sourced from various places (for further information please see the individual README accompanying each benchmark, and please let us know if something is incorrect/missing/...):
-
-(a) Gene Expression Data
-  - 3' Microarray
-    - [Ramsey and Fontes, 2013](http://www.ncbi.nlm.nih.gov/pubmed/23954399)
-      - [dataset](http://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS5070)
-      - [data](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE45417)
-      - [full article](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783546/)
-
-  - mRNAseq
-    - Data sourced from [ReCount](http://bowtie-bio.sourceforge.net/recount/)
-      - Specifically, the "gilad" study, [PMID: 20009012](http://www.ncbi.nlm.nih.gov/pubmed?term=20009012)
-
-(b) Protein Expression Data
-  - RPPA platform
-    - Data was sourced from [Hoadley et al](http://www.cell.com/cell/abstract/S0092-8674(14)00876-9), using the [TCGA portal](https://tcga-data.nci.nih.gov/docs/publications/TCGApancan_2014/)
-  - Mass Spectrometry is not yet implemented
-
-(c) Genetics Data
-  - Population studies were simulated using [data](http://tcga-data.nci.nih.gov/docs/publications/laml_2012/) from the [AML paper](http://www.nejm.org/doi/full/10.1056/NEJMoa1301689) authored by the TCGA consortium
-  - Pedigree studies were simulated using data obtained from the nice people at [Genomes Unzipped](http://genomesunzipped.org/members), who make [their own genomic data](http://genomesunzipped.org/data) publicly available
-
-(d) Simulated matrices (to allow for testing scale, as in orginal [GenBase](https://github.com/mitdbg/genbase) project 
-
-(e) Clinical data and Data Integration
-  - Data sourced from package [ncvreg](http://cran.r-project.org/web/packages/ncvreg/ncvreg.pdf), further references below:
-
-    - heart dataset
-      - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
-      - Rousseauw, J., et al. (1983). Coronary risk factor screening in three rural communities. South African Medical Journal, 64, 430-436.
-    - prostate dataset
-      - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
-      - Stamey, T., et al. (1989). Prostate specific antigen in the diagnosis and treatment of adenocarcinoma of the prostate. II. Radical prostatectomy treated patients. Journal of Urology, 16: 1076-1083.
-    - lung dataset
-      - package [survival](http://CRAN.R-project.org/package=survival)
-      - Kalbfleisch D and Prentice RL (1980), The Statistical Analysis of Failure Time Data. Wiley, New York.
-
-  - [gene RIFs](http://www.ncbi.nlm.nih.gov/gene/about-generif) provided interaction data to be used for graphical modelling with [igraph](http://igraph.sourceforge.net/)
-  - We also reproduce aspects of integrative analysis carried out in the Human Liver Cohort project:
-    - [synapse entry](https://www.synapse.org/#!Synapse:syn299418)
-    - [Schadt et al, 2008](http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.0060107)
-    
-### The Code
-
-(a) Gene Expression Data
-  - 3' Microarray
-Methods typical for microarrays including RMA and MAS150 normalisation, differential expression with limma, and some gene-set tests.
-
-  - mRNAseq
-Methods typical for mRNAseq expression analyses, including the Voom/edgeR/limma approach (The "DEseq" approach is to come).
-
-(b) Protein Expression Data
-Focussing on classification, RPPA [data](https://tcga-data.nci.nih.gov/docs/publications/TCGApancan_2014/) from [Hoadley et al](http://www.cell.com/cell/abstract/S0092-8674(14)00876-9) was used a range of unpsupervised clustering methods including hierarchical, kmeans, random forrest, bayesian
-
-(c) Genetics Data
-This section is still quite under-developed, focussing on summarisation of allele frequencies, and some sliding window methods. Implementation of "proper" genetics analysis methods is a burning priority!
-
-(d) Simulated data
-Focus on the linear algebra and stats operations below: 
-
-  - Linear Regression: build regression model to predict drug response from expression data
-
-  - Covariance: determine which pairs of genes have expression values that are correlated
-
-  - SVD: reduce the dimensionality of the problem to the top 50 components
-
-  - Biclustering: simultaneously cluster rows and columns in the expression matrix to find related genes
-
-  - Statistics: determine if certain sets of genes are highly expressed compared to the entire set of genes
-
-(e) Clinical data and Data Integration
-Alongside some graphical methods using iGraph, we focus on machine learning approaches including clustering, and prediction using naive Bayes and robust linear model approaches
-
-
-## The Experiment
+### The Experiment
+## Code
 First we prepare the environment and connect to the database (GenBench also contains code for working from local files, and for setting up your own database).
+
 
 
 ```r
@@ -198,62 +124,39 @@ res_np <- lapply(names(res_np), function(x){
   )
 ```
 
-Let's have a look:
+Let's have a look at the top results, sorted by Kruskal-Wallis:
 
 
-                                                 df   chisq   kruskal.logp          f   anova.logp
-----------------------------------------------  ---  ------  -------------  ---------  -----------
-clinical eslII prostate                           2   12.52          -2.72      52.64        -5.94
-clinical eslII varselect                          2   12.50          -2.71     844.62       -12.91
-clinical hlc svm                                  4   19.99          -3.30      18.94        -5.85
-integration hlc dataload                          4   20.33          -3.37       6.91        -3.03
-integration hlc naivebayes-expr                   4   23.56          -4.01       7.25        -3.16
-integration hlc rlm-expr                          4   20.04          -3.31       2.19        -0.98
-integration hlc svm-pheno                         4   17.54          -2.82       4.00        -1.86
-integration igraph cocitation                     1    6.82          -2.04    1867.35       -10.04
-integration igraph decompose                      1    2.53          -0.95       3.99        -1.09
-integration igraph download                       1     NaN            NaN        NaN          NaN
-integration igraph load                           1    6.82          -2.04      48.25        -3.92
-integration igraph mesh                           1    6.82          -2.04     253.06        -6.61
-integration igraph phospho                        1    6.82          -2.04     595.92        -8.07
-microarray limma genesets.examples                2   12.50          -2.71   32691.55       -22.42
-microarray limma limma                            4   22.35          -3.77     317.38       -17.06
-microarray limma load                             4   18.68          -3.04      18.94        -5.85
-microarray limma norm                             4   22.90          -3.88    6464.15       -30.08
-microarray limma qc                               4   18.29          -2.97      24.98        -6.81
-mrna_seq edgeR_voom limma                         4   27.43          -4.79     325.74       -20.44
-mrna_seq edgeR_voom load                          4    1.44          -0.08       1.25        -0.50
-mrna_seq edgeR_voom norm                          4   27.43          -4.79     265.20       -19.35
-mutation mutation fam.check                       4   25.06          -4.31     117.65       -15.11
-mutation mutation fam.clean                       4   22.75          -3.85      46.03       -10.45
-mutation mutation fam.load                        4   24.85          -4.27      94.53       -13.99
-mutation mutation fam.prepare                     4   26.74          -4.65     430.87       -21.93
-mutation mutation fam.score                       4   27.43          -4.79     557.42       -23.31
-mutation mutation fam.window                      4   26.34          -4.57     225.34       -18.49
-mutation mutation pop.clean                       4   24.84          -4.27      84.68       -13.43
-mutation mutation pop.fig1a                       4   22.64          -3.83      39.32        -9.71
-mutation mutation pop.fig1b                       4   26.58          -4.62     328.81       -20.49
-mutation mutation pop.load                        4   24.23          -4.14      45.68       -10.42
-protein rppa dist                                 4   16.18          -2.55       5.63        -2.62
-protein rppa hc                                   4   18.63          -3.03      64.51       -11.76
-protein rppa km                                   4    7.98          -1.03       3.67        -1.74
-protein rppa load                                 4    9.27          -1.26       0.97        -0.35
-simulated_GEO_matrix chocolate_geo biclust        4   13.60          -2.06       4.33        -2.07
-simulated_GEO_matrix chocolate_geo covar          4   21.01          -3.50      18.63        -6.48
-simulated_GEO_matrix chocolate_geo regression     4    9.01          -1.21       0.69        -0.22
-simulated_GEO_matrix chocolate_geo stats          4   20.97          -3.49      11.62        -4.74
-simulated_GEO_matrix chocolate_geo svd            4    3.74          -0.35       1.53        -0.65
+                                 df   chisq   kruskal.logp        f   anova.logp
+------------------------------  ---  ------  -------------  -------  -----------
+mrna_seq edgeR_voom norm          4   27.43          -4.79   265.20       -19.35
+mutation mutation fam.score       4   27.43          -4.79   557.42       -23.31
+mrna_seq edgeR_voom limma         4   27.43          -4.79   325.74       -20.44
+mutation mutation fam.prepare     4   26.74          -4.65   430.87       -21.93
+mutation mutation pop.fig1b       4   26.58          -4.62   328.81       -20.49
 
-Interesting to see that, for example in the "mrna_seq / edgeR" benchmark, we only see a significant difference for computing on the data, not for loading. But considering that the data loading represents most of the time, this is only a small gain. This also illustrates the importance of having ecologically valid benchmarks, as though updating R does bring speedups, for the informatician at the bench there is no benefit and the speedups are not global. 
+and the bottom:
 
-## Conclusion
+
+                                                 df   chisq   kruskal.logp      f   anova.logp
+----------------------------------------------  ---  ------  -------------  -----  -----------
+mrna_seq edgeR_voom load                          4    1.44          -0.08   1.25        -0.50
+simulated_GEO_matrix chocolate_geo svd            4    3.74          -0.35   1.53        -0.65
+integration igraph decompose                      1    2.53          -0.95   3.99        -1.09
+protein rppa km                                   4    7.98          -1.03   3.67        -1.74
+simulated_GEO_matrix chocolate_geo regression     4    9.01          -1.21   0.69        -0.22
+
+Interesting to see that the biggest performance changes are found in iterative tasks and not in data loading or well-established statistics, for example in the "mrna_seq / edgeR" benchmark, we only see a significant difference for computing on the data, not for loading. But considering that the data loading represents most of the time, this is only a small gain. This also illustrates the importance of having ecologically valid benchmarks, as though updating R does bring speedups, for the informatician at the bench there is no benefit and the speedups are not global. 
+
+## Conclusions
 Update R!
 
 Watch this space for more updates, including more benchmarks, more coverage of bioconductor, etc. And running the suite not just with different GNU R versions, but with different R language implementations.
 
 Feedback, [bugs](https://github.com/biolion/genbench/issues), pull requests, comments, are all more than welcome! We include a "TEMPLATE" benchmark to make it easy for people to add their own ideas.
 
-## References
+## Further information
+### References
 * Other Real-World Bioinformatics benchmarks
      * [GenBase](https://github.com/mitdbg/genbase)
      * [RforProteomics](http://lgatto.github.com/RforProteomics/)
@@ -268,4 +171,81 @@ Feedback, [bugs](https://github.com/biolion/genbench/issues), pull requests, com
      * [Hiring!](http://www.bedatadriven.com/jobs.html)
 * Please check out
      * Genbench on [Github](https://github.com/biolion/genbench), please submit any bugs [here](https://github.com/biolion/genbench/issues)
+     
+## The Benchmarks
+### The Data
+
+All data is publicly available, sourced from various places (for further information please see the individual README accompanying each benchmark, and please let us know if something is incorrect/missing/...):
+
+(a) Gene Expression Data
+  - 3' Microarray
+    - [Ramsey and Fontes, 2013](http://www.ncbi.nlm.nih.gov/pubmed/23954399)
+      - [dataset](http://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS5070)
+      - [data](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE45417)
+      - [full article](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783546/)
+
+  - mRNAseq
+    - Data sourced from [ReCount](http://bowtie-bio.sourceforge.net/recount/)
+      - Specifically, the "gilad" study, [PMID: 20009012](http://www.ncbi.nlm.nih.gov/pubmed?term=20009012)
+
+(b) Protein Expression Data
+  - RPPA platform
+    - Data was sourced from [Hoadley et al](http://www.cell.com/cell/abstract/S0092-8674(14)00876-9), using the [TCGA portal](https://tcga-data.nci.nih.gov/docs/publications/TCGApancan_2014/)
+  - Mass Spectrometry is not yet implemented
+
+(c) Genetics Data
+  - Population studies were simulated using [data](http://tcga-data.nci.nih.gov/docs/publications/laml_2012/) from the [AML paper](http://www.nejm.org/doi/full/10.1056/NEJMoa1301689) authored by the TCGA consortium
+  - Pedigree studies were simulated using data obtained from the nice people at [Genomes Unzipped](http://genomesunzipped.org/members), who make [their own genomic data](http://genomesunzipped.org/data) publicly available
+
+(d) Simulated matrices (to allow for testing scale, as in orginal [GenBase](https://github.com/mitdbg/genbase) project 
+
+(e) Clinical data and Data Integration
+  - Data sourced from package [ncvreg](http://cran.r-project.org/web/packages/ncvreg/ncvreg.pdf), further references below:
+
+    - heart dataset
+      - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
+      - Rousseauw, J., et al. (1983). Coronary risk factor screening in three rural communities. South African Medical Journal, 64, 430-436.
+    - prostate dataset
+      - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
+      - Stamey, T., et al. (1989). Prostate specific antigen in the diagnosis and treatment of adenocarcinoma of the prostate. II. Radical prostatectomy treated patients. Journal of Urology, 16: 1076-1083.
+    - lung dataset
+      - package [survival](http://CRAN.R-project.org/package=survival)
+      - Kalbfleisch D and Prentice RL (1980), The Statistical Analysis of Failure Time Data. Wiley, New York.
+
+  - [gene RIFs](http://www.ncbi.nlm.nih.gov/gene/about-generif) provided interaction data to be used for graphical modelling with [igraph](http://igraph.sourceforge.net/)
+  - We also reproduce aspects of integrative analysis carried out in the Human Liver Cohort project:
+    - [synapse entry](https://www.synapse.org/#!Synapse:syn299418)
+    - [Schadt et al, 2008](http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.0060107)
+    
+### The Code
+
+(a) Gene Expression Data
+  - 3' Microarray
+Methods typical for microarrays including RMA and MAS150 normalisation, differential expression with limma, and some gene-set tests.
+
+  - mRNAseq
+Methods typical for mRNAseq expression analyses, including the Voom/edgeR/limma approach (The "DEseq" approach is to come).
+
+(b) Protein Expression Data
+Focussing on classification, RPPA [data](https://tcga-data.nci.nih.gov/docs/publications/TCGApancan_2014/) from [Hoadley et al](http://www.cell.com/cell/abstract/S0092-8674(14)00876-9) was used a range of unpsupervised clustering methods including hierarchical, kmeans, random forrest, bayesian
+
+(c) Genetics Data
+This section is still quite under-developed, focussing on summarisation of allele frequencies, and some sliding window methods. Implementation of "proper" genetics analysis methods is a burning priority!
+
+(d) Simulated data
+Focus on the linear algebra and stats operations below: 
+
+  - Linear Regression: build regression model to predict drug response from expression data
+
+  - Covariance: determine which pairs of genes have expression values that are correlated
+
+  - SVD: reduce the dimensionality of the problem to the top 50 components
+
+  - Biclustering: simultaneously cluster rows and columns in the expression matrix to find related genes
+
+  - Statistics: determine if certain sets of genes are highly expressed compared to the entire set of genes
+
+(e) Clinical data and Data Integration
+Alongside some graphical methods using iGraph, we focus on machine learning approaches including clustering, and prediction using naive Bayes and robust linear model approaches
+
      
