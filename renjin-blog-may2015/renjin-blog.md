@@ -12,7 +12,7 @@ Our company as recently become involved in bioinformatics, and needed a base of 
 
 ### Background
 
-Forked from, and inspired by, [GenBase](https://github.com/mitdbg/genbase), [GenBench](https://github.com/biolion/genbench) is an attempt to build up some *ecologically valid* benchmarks and tests for bioinformatics. Another nice example of this is RforProteomics, see their [project](http://lgatto.github.com/RforProteomics/) and accompanying [paper](http://arxiv.org/pdf/1305.6559.pdf).
+Forked from and inspired by [GenBase](https://github.com/mitdbg/genbase), [GenBench](https://github.com/biolion/genbench) is an attempt to build up some *ecologically valid* benchmarks and tests for bioinformatics. Another nice example of this is RforProteomics, see their [project](http://lgatto.github.com/RforProteomics/) and accompanying [paper](http://arxiv.org/pdf/1305.6559.pdf).
 
 This benchmark does not cover all possible operations performed in bioinformatics/genomics. In particular, we chose to not focus on (pre-)processing of raw data and instead focus on higher-level processing typical for a range of datatypes. We have examples for microarray and mRNA-seq, some proteomics and genetics, machine learning and data integration (for full information, also on the data sources, see the end of the post).
 
@@ -38,9 +38,17 @@ Specifically, we ran the full suite of benchmarks against the following releases
 - R-3.1.3
 - R-3.2.0 
 
+## The Experiment
+### Running the bechmarks
+After installing the various versions of GNU R, we set up a [Jenkins](https://jenkins-ci.org/) build job to run the full collection of benchmarks 5 times (consecutively, to avoid any competition for resources) and upload the resulting timings to our database:
 
-### The Experiment
-## Code
+* Run the benchmarks using wrapper script that also installs any required packages (specifically, we ran [this commit](https://github.com/biolion/genbench/commit/193af69d580861f09b856b6140eb0aceb5bbe7d1) of the benchmarks)
+  * `/usr/local/$RVERSION/bin/R -f run_benchmarks.R --args 5`
+* Switch to the `/db` directory and upload the resulting timings from the database
+  * `cd db`
+  * `R -f upload_benchmarks.R --args --usr=foo --pwd=bar --conn=jdbc:mysql://[host]/Rbenchmarks`
+
+### Code
 First we prepare the environment and connect to the database (GenBench also contains code for working from local files, and for setting up your own database).
 
 
@@ -146,9 +154,9 @@ integration igraph decompose                      1    2.53          -0.95   3.9
 protein rppa km                                   4    7.98          -1.03   3.67        -1.74
 simulated_GEO_matrix chocolate_geo regression     4    9.01          -1.21   0.69        -0.22
 
-Interesting to see that the biggest performance changes are found in iterative tasks and not in data loading or well-established statistics, for example in the "mrna_seq / edgeR" benchmark, we only see a significant difference for computing on the data, not for loading. But considering that the data loading represents most of the time, this is only a small gain. This also illustrates the importance of having ecologically valid benchmarks, as though updating R does bring speedups, for the informatician at the bench there is no benefit and the speedups are not global. 
+Interesting to see that the biggest performance changes are found in iterative tasks and not in data loading or well-established statistics, for example in the "mrna_seq / edgeR" benchmark, we only see a significant difference for computing on the data, not for loading. But considering that the data loading represents most of the time, this represents only a small gain overall. This also illustrates the importance of having ecologically valid benchmarks, because though updating R does bring speedups, for the informatician at the bench there is limited benefit as the speedups are not global. 
 
-## Conclusions
+### Conclusions
 Update R!
 
 Watch this space for more updates, including more benchmarks, more coverage of bioconductor, etc. And running the suite not just with different GNU R versions, but with different R language implementations.
