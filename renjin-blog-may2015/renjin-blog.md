@@ -1,6 +1,6 @@
 # renjin-blog-may2015
 Ieuan Clay  
-Tuesday, June 16, 2015  
+Tuesday, June 23, 2015  
 
 ## GenBench: Realworld Genomics Benchmarks for R
 
@@ -57,7 +57,9 @@ First we prepare the environment and connect to the database (GenBench also cont
 # load packages
 library(RJDBC)
 library(plyr)
+library(reshape)
 library(ggplot2)
+library(Hmisc)
 library(knitr)
 # set the seed
 set.seed(8008)
@@ -107,7 +109,13 @@ The full results for this test run can be seen here:
 
 We can see differences across the R versions and the trend appears to be that *"newer = faster"*, though there are some cases where R-2.14.2 (the oldest version we test here), outperforms all other versions tested. We are looking into why this might be.
 
-Some quick stats on those differences:
+Perhaps a better way to view this is to look at the total time for each benchmark (summing all the microbenchmarks), and scale to the lowest R version tested has an average value of 100:
+
+![](renjin-blog_files/figure-html/scaledresults-1.png) 
+
+Now we see that the overall trend is that newer versions perform better overall, and that R-2.15.3 does some strange things (we are running further tests to see if this is reproducible).
+
+Some quick stats on those trends, looking for significant differences in time across the microbenchmarks when comparing the different versions of GNU R tested (using both a parametric and non-parametric test):
 
 
 ```r
@@ -186,52 +194,52 @@ Feedback, [bugs](https://github.com/biolion/genbench/issues), pull requests, com
 All data is publicly available, sourced from various places (for further information please see the individual README accompanying each benchmark, and please let us know if something is incorrect/missing/...):
 
 (a) Gene Expression Data
-  - 3' Microarray
-    - [Ramsey and Fontes, 2013](http://www.ncbi.nlm.nih.gov/pubmed/23954399)
-      - [dataset](http://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS5070)
-      - [data](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE45417)
-      - [full article](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783546/)
+    - 3' Microarray
+        - [Ramsey and Fontes, 2013](http://www.ncbi.nlm.nih.gov/pubmed/23954399)
+        - [dataset](http://www.ncbi.nlm.nih.gov/sites/GDSbrowser?acc=GDS5070)
+        - [data](http://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE45417)
+        - [full article](http://www.ncbi.nlm.nih.gov/pmc/articles/PMC3783546/)
 
-  - mRNAseq
-    - Data sourced from [ReCount](http://bowtie-bio.sourceforge.net/recount/)
-      - Specifically, the "gilad" study, [PMID: 20009012](http://www.ncbi.nlm.nih.gov/pubmed?term=20009012)
+    - mRNAseq
+        - Data sourced from [ReCount](http://bowtie-bio.sourceforge.net/recount/)
+        - Specifically, the "gilad" study, [PMID: 20009012](http://www.ncbi.nlm.nih.gov/pubmed?term=20009012)
 
 (b) Protein Expression Data
-  - RPPA platform
-    - Data was sourced from [Hoadley et al](http://www.cell.com/cell/abstract/S0092-8674(14)00876-9), using the [TCGA portal](https://tcga-data.nci.nih.gov/docs/publications/TCGApancan_2014/)
-  - Mass Spectrometry is not yet implemented
+    - RPPA platform
+        - Data was sourced from [Hoadley et al](http://www.cell.com/cell/abstract/S0092-8674(14)00876-9), using the [TCGA portal](https://tcga-data.nci.nih.gov/docs/publications/TCGApancan_2014/)
+    - Mass Spectrometry is not yet implemented
 
 (c) Genetics Data
-  - Population studies were simulated using [data](http://tcga-data.nci.nih.gov/docs/publications/laml_2012/) from the [AML paper](http://www.nejm.org/doi/full/10.1056/NEJMoa1301689) authored by the TCGA consortium
-  - Pedigree studies were simulated using data obtained from the nice people at [Genomes Unzipped](http://genomesunzipped.org/members), who make [their own genomic data](http://genomesunzipped.org/data) publicly available
+    - Population studies were simulated using [data](http://tcga-data.nci.nih.gov/docs/publications/laml_2012/) from the [AML paper](http://www.nejm.org/doi/full/10.1056/NEJMoa1301689) authored by the TCGA consortium
+    - Pedigree studies were simulated using data obtained from the nice people at [Genomes Unzipped](http://genomesunzipped.org/members), who make [their own genomic data](http://genomesunzipped.org/data) publicly available
 
 (d) Simulated matrices (to allow for testing scale, as in orginal [GenBase](https://github.com/mitdbg/genbase) project 
 
 (e) Clinical data and Data Integration
-  - Data sourced from package [ncvreg](http://cran.r-project.org/web/packages/ncvreg/ncvreg.pdf), further references below:
+    - Data sourced from package [ncvreg](http://cran.r-project.org/web/packages/ncvreg/ncvreg.pdf), further references below:
 
     - heart dataset
-      - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
-      - Rousseauw, J., et al. (1983). Coronary risk factor screening in three rural communities. South African Medical Journal, 64, 430-436.
+        - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
+        - Rousseauw, J., et al. (1983). Coronary risk factor screening in three rural communities. South African Medical Journal, 64, 430-436.
     - prostate dataset
-      - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
-      - Stamey, T., et al. (1989). Prostate specific antigen in the diagnosis and treatment of adenocarcinoma of the prostate. II. Radical prostatectomy treated patients. Journal of Urology, 16: 1076-1083.
+        - Hastie, T., Tibshirani, R., and Friedman, J. (2001). The Elements of Statistical Learning. Springer. 
+        - Stamey, T., et al. (1989). Prostate specific antigen in the diagnosis and treatment of adenocarcinoma of the prostate. II. Radical prostatectomy treated patients. Journal of Urology, 16: 1076-1083.
     - lung dataset
-      - package [survival](http://CRAN.R-project.org/package=survival)
-      - Kalbfleisch D and Prentice RL (1980), The Statistical Analysis of Failure Time Data. Wiley, New York.
+        - package [survival](http://CRAN.R-project.org/package=survival)
+        - Kalbfleisch D and Prentice RL (1980), The Statistical Analysis of Failure Time Data. Wiley, New York.
 
-  - [gene RIFs](http://www.ncbi.nlm.nih.gov/gene/about-generif) provided interaction data to be used for graphical modelling with [igraph](http://igraph.sourceforge.net/)
-  - We also reproduce aspects of integrative analysis carried out in the Human Liver Cohort project:
-    - [synapse entry](https://www.synapse.org/#!Synapse:syn299418)
-    - [Schadt et al, 2008](http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.0060107)
+    - [gene RIFs](http://www.ncbi.nlm.nih.gov/gene/about-generif) provided interaction data to be used for graphical modelling with [igraph](http://igraph.sourceforge.net/)
+    - We also reproduce aspects of integrative analysis carried out in the Human Liver Cohort project:
+        - [synapse entry](https://www.synapse.org/#!Synapse:syn299418)
+        - [Schadt et al, 2008](http://journals.plos.org/plosbiology/article?id=10.1371/journal.pbio.0060107)
     
 ### The Code
 
 (a) Gene Expression Data
-  - 3' Microarray
+    - 3' Microarray
 Methods typical for microarrays including RMA and MAS150 normalisation, differential expression with limma, and some gene-set tests.
 
-  - mRNAseq
+    - mRNAseq
 Methods typical for mRNAseq expression analyses, including the Voom/edgeR/limma approach (The "DEseq" approach is to come).
 
 (b) Protein Expression Data
@@ -243,15 +251,15 @@ This section is still quite under-developed, focussing on summarisation of allel
 (d) Simulated data
 Focus on the linear algebra and stats operations below: 
 
-  - Linear Regression: build regression model to predict drug response from expression data
+    - Linear Regression: build regression model to predict drug response from expression data
 
-  - Covariance: determine which pairs of genes have expression values that are correlated
+    - Covariance: determine which pairs of genes have expression values that are correlated
 
-  - SVD: reduce the dimensionality of the problem to the top 50 components
+    - SVD: reduce the dimensionality of the problem to the top 50 components
 
-  - Biclustering: simultaneously cluster rows and columns in the expression matrix to find related genes
+    - Biclustering: simultaneously cluster rows and columns in the expression matrix to find related genes
 
-  - Statistics: determine if certain sets of genes are highly expressed compared to the entire set of genes
+    - Statistics: determine if certain sets of genes are highly expressed compared to the entire set of genes
 
 (e) Clinical data and Data Integration
 Alongside some graphical methods using iGraph, we focus on machine learning approaches including clustering, and prediction using naive Bayes and robust linear model approaches

@@ -1,7 +1,7 @@
 ---
 title: "renjin-blog-may2015"
 author: "Ieuan Clay"
-date: "Tuesday, June 16, 2015"
+date: "Tuesday, June 23, 2015"
 output:
   html_document:
     keep_md: yes
@@ -67,6 +67,7 @@ library(RJDBC)
 library(plyr)
 library(reshape)
 library(ggplot2)
+library(Hmisc)
 library(knitr)
 # set the seed
 set.seed(8008)
@@ -86,6 +87,7 @@ library(RJDBC)
 library(plyr)
 library(reshape)
 library(ggplot2)
+library(Hmisc)
 library(knitr)
 # set the seed
 set.seed(8008)
@@ -165,9 +167,11 @@ g +
 
 ```
 
-Perhaps a better way to view this is to look at the total time for each benchmark, and scale to the lowest R version tested (we also need to drop any blocks that were not tested across all versions):
+We can see differences across the R versions and the trend appears to be that *"newer = faster"*, though there are some cases where R-2.14.2 (the oldest version we test here), outperforms all other versions tested. We are looking into why this might be.
 
-```{r scaledresults, echo=FALSE, fig.height=8}
+Perhaps a better way to view this is to look at the total time for each benchmark (summing all the microbenchmarks), and scale to the lowest R version tested has an average value of 100:
+
+```{r scaledresults, echo=FALSE,message=FALSE, warning=FALSE, fig.height=8, fig.width=8}
 # make r version into a single factor for easiness
 res$rversion <- as.factor(paste(res$lang, res$lang_major, res$lang_minor))
 levels(res$rversion) <- c("R 2 14.2", "R 2 15.3", "R 3 0.3",  "R 3 1.3",  "R 3 2.0" )
@@ -188,51 +192,54 @@ subres <- ddply(
 subres <- merge(subres, res, by = c("benchmark_group","benchmark", "block"), all.x = TRUE)
 subres <- subset(subres, completed_versions==max_complete)
 
-# calculate the lowest r version that successfully ran
-subres <- ddply(
-  .data = subres, 
-  .(benchmark_group, benchmark), 
-  plyr::mutate, min_time=min(value), 
-  low_r_version=levels(rversion)[sum(!levels(rversion) %in% rversion) + 1]
-                              
-  )
-# check
-ddply(.data = subres, 
-      .(benchmark_group, benchmark), 
-      plyr::summarize, 
-      unique(low_r_version))
+# calculate the total time per benchmark run
+subres <- ddply(.data = subres,
+                .(benchmark_group, benchmark, meta_id, rversion),
+                plyr::summarise,
+                total_time=sum(value)
+                )
+# calculate the average total time per benchmark file
+subres <- ddply(.data = subres,
+                .(benchmark_group, benchmark, rversion),
+                plyr::mutate,
+                avg_run_time=mean(total_time)
+                )
+
+# sort by rversion
+subres <- subres[order(subres$rversion),]
+
+# scale to lowest rversion run
+subres <- ddply(.data = subres,
+                .(benchmark_group, benchmark),
+                plyr::mutate,
+                scaled_time=(total_time/avg_run_time[[1]])*100
+                )
 
 # plot
-g <- ggplot(data = 
-              # summarize each benchmark to total time
-              ddply(.data = res, 
-                         .(meta_id, rversion, benchmark_group, benchmark), 
-                         plyr::summarize, 
-                         total_time=sum(value),
-                         total_benchmarks=length(unique(block))
-                    )
+g <- ggplot(data = subres,
+            aes(y=scaled_time, x=rversion, colour=paste(benchmark_group, benchmark))
             )
 g +
-  geom_jitter(aes(y=total_time, x=block, colour=paste(lang, lang_major, lang_minor)), 
-              position = position_jitter(width = .5)) +
-  facet_grid(. ~ benchmark_group + benchmark, 
-             scales = "free_x", space="free_x") +
-  scale_y_log10() +
+  # scaled time (each run)
+  geom_jitter(size=2, position = position_jitter(width = .1)) +
+  stat_smooth(aes(group=paste(benchmark_group, benchmark)), method="loess") +
+  facet_grid(benchmark_group ~ ., scales="free_y") +
   theme_bw() +
   theme(axis.text.x  = element_text(angle=90, vjust=0.5)) +
-  ggtitle("Time per benchmark run, by block, all results") +
-  ylab("Time (seconds)") +
-  xlab("Benchmark section") +
-  theme(
-    legend.position=c(.95, .85), 
-    legend.title=element_blank(), 
-    legend.background = element_rect(fill="gray90"))
+  ggtitle("Trends in scaled running time") +
+  ylab("Scaled Time (lowest R version average time = 100)") +
+  xlab("GNU R version") 
+# +
+#   theme(
+#     legend.position=c(.95, .85), 
+#     legend.title=element_blank(), 
+#     legend.background = element_rect(fill="gray90"))
 
 ```
 
-We can see differences across the R versions and the trend appears to be that *"newer = faster"*, though there are some cases where R-2.14.2 (the oldest version we test here), outperforms all other versions tested. We are looking into why this might be.
+Now we see that the overall trend is that newer versions perform better overall, and that R-2.15.3 does some strange things (we are running further tests to see if this is reproducible).
 
-Some quick stats on those differences:
+Some quick stats on those trends, looking for significant differences in time across the microbenchmarks when comparing the different versions of GNU R tested (using both a parametric and non-parametric test):
 
 ```{r stats}
 res_np <- lapply(
